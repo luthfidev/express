@@ -27,20 +27,6 @@ app.get('*', (request, response) => {
   response.status('404').send('Page Not Found')
 })
 
-/* app.post('/users', (request, response) => {
-  const { username } = request.body
-  if (username && username !== '') {
-    console.log(request.body)
-    response.status(201).send({
-      msg: `Hello ${request.body.username}! Welcome my backend`
-    })
-  } else {
-    response.status(400).send({
-      msg: 'Username must be filled'
-    })
-  }
-}) */
-
 app.listen(APP_PORT, () => {
   console.log(`Express app is listening on ${APP_PORT}`)
 })

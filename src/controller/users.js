@@ -1,4 +1,4 @@
-const { users: initialData } = require('../utils/_DB')
+// const { users: initialData } = require('../utils/_DB')
 const userModel = require('../models/users')
 const qs = require('querystring')
 
@@ -131,22 +131,29 @@ module.exports = {
           { id: parseInt(id) }
         ]
         const checkEmail = await userModel.getUserByCondition({ email })
-        const results = await userModel.updateUser(userData) // untuk menampilkan data response ke UI (User Interface)
-        // console.log(results)
-        if (checkEmail) {}
-        if (results) {}
-        const data = {
-          success: true,
-          msg: 'user has been update',
-          data: userData[0]
+        if (checkEmail) {
+          const results = await userModel.updateUser(userData) // untuk menampilkan data response ke UI (User Interface)
+          if (results) {
+            const data = {
+              success: true,
+              msg: 'user has been update',
+              data: userData[0]
+            }
+            response.status(201).send(data)
+          } else {
+            const data = {
+              success: false,
+              msg: 'failed to update user'
+            }
+            response.status(401).send(data)
+          }
+        } else {
+          const data = {
+            success: false,
+            msg: 'all form must be filled'
+          }
+          response.status(401).send(data)
         }
-        response.status(201).send(data)
-      } else {
-        const data = {
-          success: false,
-          msg: 'all form must be filled'
-        }
-        response.status(401).send(data)
       }
     } else {
       const data = {
@@ -160,7 +167,7 @@ module.exports = {
   deleteUser: async (request, response) => {
     const { id } = request.params
     const _id = { id: parseInt(id) }
-    const checkId = await userModel.getUserByCondition(_id)
+    const checkId = userModel.getUserByCondition(_id)
     if (checkId.length > 0) {
       const result = await userModel.deleteUser(_id)
       if (result) {
