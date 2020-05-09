@@ -1,4 +1,4 @@
-const { users: initialData } = require('../utils/DB')
+const { users: initialData } = require('../utils/_DB')
 const userModel = require('../models/users')
 const qs = require('querystring')
 
@@ -44,18 +44,22 @@ const getPrevLinkQueryString = (page, currentQuery) => {
 
 module.exports = {
 
-  getAllUsers: (request, response) => {
+  getAllUsers: async (request, response) => {
     const { page, limit } = request.query
-    const totalData = initialData.length
+    const totalData = await userModel.getUsersCount()
+    // const totalData = initialData.length
     const sliceStart = getPage(page) * getPerPage(limit) - getPerPage(limit)
     const sliceEnd = (getPage(page) * getPerPage(limit))
     const totalPage = Math.ceil(totalData / getPerPage(limit))
     const prevLink = getPrevLinkQueryString(getPage(page), request.query)
     const nextLink = getNextLinkQuerytString(getPage(page), totalPage, request.query)
+
+    const userData = await userModel.getAllUser(sliceStart, sliceEnd)
+
     const data = {
       success: true,
       msg: 'List all users data',
-      data: [...initialData].slice(sliceStart, sliceEnd),
+      data: userData,
       pageInfo: {
         page: getPage(page),
         totalPage,
@@ -68,26 +72,31 @@ module.exports = {
     response.status(200).send(data)
   },
 
-  createUser: (request, response) => {
-    const { name, email } = request.body // mengambil data dari request.body
-    if (name && email && name !== '' && email !== '') { // name dan email itu ada atau tidak / diisit dan tidaknya
-      const isExist = userModel.getUserByEmail(email, initialData).length
-      // jika create user berhasil
-      if (isExist < 1) { // jika tidak ada user dengan email
-        const result = userModel.createUser(name, email, initialData)
-        if (result) {
+  createUser: async (request, response) => {
+    const { name, email, password } = request.body // mengambil data dari request.body
+    if (name && email && password && name !== '' && email !== '' && password !== '') { // name dan email itu ada atau tidak / diisit dan tidaknya
+      const isExist = await userModel.getUserByCondition({ email })
+      if (isExist.length < 1) { // jika tidak ada user dengan email
+        // const result = userModel.createUser(name, email, initialData)
+        const userData = {
+          name,
+          email,
+          password
+        }
+        const results = await userModel.createUser(userData)
+        if (results) {
         // response success
           const data = {
             success: true,
-            msg: 'created',
-            data: request.body
+            msg: 'user has been created success',
+            data: userData
           }
           response.status(201).send(data)
         } else { // jika create user gagal
           const data = {
             success: false,
             msg: 'failed created',
-            data: request.body
+            data: userData
           }
           response.status(400).send(data)
         }
@@ -108,19 +117,28 @@ module.exports = {
     }
   },
 
-  updateUser: (request, response) => {
+  updateUser: async (request, response) => {
     // console.log(request.params.id)
     const { id } = request.params // mendapatkan id dari parameter
-    const { name, email } = request.body // mendapatkan body
-    const fetchUser = userModel.getUserById(id, initialData)
-
-    if (fetchUser.data.length > 0) {
-      if (name && email && name !== '' && email !== '') {
-        const result = userModel.updateUser(name, email, fetchUser.index, initialData) // {id : name password}
+    const { name, email, password } = request.body // mendapatkan body
+    // const fetchUser = userModel.getUserById(id, initialData)
+    const checkId = await userModel.getUserByCondition({ id: parseInt(id) })
+    if (checkId.length > 0) {
+      if (name && email && name && password !== '' && email !== '' && password !== '') {
+        // const result = userModel.updateUser(name, email, fetchUser.index, initialData) // {id : name password}
+        const userData = [
+          { name, email, password },
+          { id: parseInt(id) }
+        ]
+        const checkEmail = await userModel.getUserByCondition({ email })
+        const results = await userModel.updateUser(userData) // untuk menampilkan data response ke UI (User Interface)
+        // console.log(results)
+        if (checkEmail) {}
+        if (results) {}
         const data = {
           success: true,
           msg: 'user has been update',
-          data: result
+          data: userData[0]
         }
         response.status(201).send(data)
       } else {
@@ -139,21 +157,22 @@ module.exports = {
     }
   },
 
-  deleteUser: (request, response) => {
+  deleteUser: async (request, response) => {
     const { id } = request.params
-    const fetchUser = userModel.getUserById(id, initialData)
-    if (fetchUser.data.length > 0) {
-      const result = userModel.deleteUser(fetchUser.index, initialData)
+    const _id = { id: parseInt(id) }
+    const checkId = await userModel.getUserByCondition(_id)
+    if (checkId.length > 0) {
+      const result = await userModel.deleteUser(_id)
       if (result) {
         const data = {
           success: true,
-          msg: `user with id ${request.params.id} is deleted`
+          msg: `user with id ${id} is deleted`
         }
         response.status(200).send(data)
       } else {
         const data = {
           success: false,
-          msg: 'cannot delete data'
+          msg: 'Failed to delete user'
         }
         response.status(400).send(data)
       }
