@@ -1,3 +1,6 @@
+require('dotenv').config()
+const { APP_PORT } = process.env
+
 const express = require('express')
 const app = express()
 const bodyparser = require('body-parser')
@@ -38,6 +41,6 @@ app.get('*', (request, response) => {
   }
 }) */
 
-app.listen(5000, () => {
-  console.log('Express app is listening on 5000 port')
+app.listen(APP_PORT, () => {
+  console.log(`Express app is listening on ${APP_PORT}`)
 })
