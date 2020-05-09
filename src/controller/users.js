@@ -167,10 +167,10 @@ module.exports = {
   deleteUser: async (request, response) => {
     const { id } = request.params
     const _id = { id: parseInt(id) }
-    const checkId = userModel.getUserByCondition(_id)
+    const checkId = await userModel.getUserByCondition(_id)
     if (checkId.length > 0) {
-      const result = await userModel.deleteUser(_id)
-      if (result) {
+      const results = await userModel.deleteUser(_id)
+      if (results) {
         const data = {
           success: true,
           msg: `user with id ${id} is deleted`
@@ -191,4 +191,5 @@ module.exports = {
       response.status(400).send(data)
     }
   }
+
 }
