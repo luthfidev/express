@@ -1,34 +1,13 @@
-const users = [
-  {
-    id: 1,
-    name: 'admin',
-    email: 'admin@admin.com'
-  },
-  {
-    id: 2,
-    name: 'administrator',
-    email: 'administrator@server.com'
-  },
-  {
-    id: 3,
-    name: 'administrator',
-    email: 'administrator@server.com'
-  },
-  {
-    id: 4,
-    name: 'administrator',
-    email: 'administrator@server.com'
-  },
-  {
-    id: 5,
-    name: 'administrator',
-    email: 'administrator@server.com'
-  },
-  {
-    id: 6,
-    name: 'administrator',
-    email: 'administrator@server.com'
-  }
-]
+require('dotenv').config()
+const { DB_HOST, DB_USER, DB_NAME, DB_PASS } = process.env
+const mysql = require('mysql')
 
-module.exports = { users }
+const options = {
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  database: DB_NAME
+}
+const conn = mysql.createConnection(options)
+
+module.exports = conn
