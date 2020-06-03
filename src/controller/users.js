@@ -157,7 +157,7 @@ module.exports = {
       }
     } else {
       const data = {
-        success: true,
+        success: false,
         msg: `User with id ${id} not found`
       }
       response.status(400).send(data)
